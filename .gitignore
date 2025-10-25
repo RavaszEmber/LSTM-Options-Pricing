@@ -1,3 +1,6 @@
 .venv
 .idea
 data/
+docs/references
+.DS_Store
+
