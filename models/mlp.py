@@ -27,8 +27,9 @@ class PimentelMLP(nn.Module):
         input_feature_size=5,
         output_size=1,
         number_layers=4,
-        units_per_layer=32,
+        units_per_layer=64,
         device="cpu",
+        momentum=0.1,
     ):
         super().__init__()
         self._input_feature_size = input_feature_size
@@ -36,9 +37,10 @@ class PimentelMLP(nn.Module):
         self._number_layers = number_layers
         self._units_per_layer = units_per_layer
         self._device = device
+        self._momentum = momentum
 
         logging.info(
-            f"Pimentel MLP initialized. {self._input_feature_size=} {self._output_size=} {self._number_layers=} {self._units_per_layer=} {self._device=}"
+            f"Pimentel MLP initialized. {self._input_feature_size=} {self._output_size=} {self._number_layers=} {self._units_per_layer=} {self._device=} {self._momentum=}"
         )
 
         layers = self.generate_layers()
@@ -67,6 +69,13 @@ class PimentelMLP(nn.Module):
                 )
             )
             if not is_last_layer:
+                layers.append(
+                    nn.BatchNorm1d(
+                        num_features=out_features,
+                        momentum=self._momentum,
+                        device=self._device,
+                    )
+                )
                 layers.append(nn.ReLU())
         return layers
 
