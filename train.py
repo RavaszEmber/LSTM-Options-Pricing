@@ -293,27 +293,30 @@ def main():
             test_mae = torch.mean(torch.abs(test_pred - y_test_device)).item()
             test_metrics = calculate_pimentel_metrics(y_test_device, test_pred)
 
-        eval_results = pd.DataFrame([{
-            "test_year": TEST_YEAR,
-            "test_month": month,
-            "model_type": "PimentelMLP",
-            "test_loss_mse": test_loss.item(),
-            "test_rmse": torch.sqrt(test_loss).item(),
-            "test_mae": test_mae,
-            "theil_u1": test_metrics["theil_u1"],
-            "bias_proportion": test_metrics["bias_prop"],
-            "variance_proportion": test_metrics["var_prop"],
-            "covariance_proportion": test_metrics["cov_prop"],
-            "sum_of_proportions": test_metrics["bias_prop"]
-            + test_metrics["var_prop"]
-            + test_metrics["cov_prop"],
-        }])
+        eval_results = pd.DataFrame(
+            [
+                {
+                    "test_year": TEST_YEAR,
+                    "test_month": month,
+                    "model_type": "PimentelMLP",
+                    "test_loss_mse": test_loss.item(),
+                    "test_rmse": torch.sqrt(test_loss).item(),
+                    "test_mae": test_mae,
+                    "theil_u1": test_metrics["theil_u1"],
+                    "bias_proportion": test_metrics["bias_prop"],
+                    "variance_proportion": test_metrics["var_prop"],
+                    "covariance_proportion": test_metrics["cov_prop"],
+                    "sum_of_proportions": test_metrics["bias_prop"]
+                    + test_metrics["var_prop"]
+                    + test_metrics["cov_prop"],
+                }
+            ]
+        )
 
         eval_results_path = f"{checkpoint_dir}/{TEST_YEAR}_{month:02d}_results.csv"
         eval_results.to_csv(eval_results_path, index=False)
 
         print(eval_results)
-
 
 
 if __name__ == "__main__":
