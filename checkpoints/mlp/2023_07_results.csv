@@ -1,2 +1,2 @@
-test_year,test_month,model_type,test_loss_mse,test_rmse,test_mae,theil_u1,bias_proportion,variance_proportion,covariance_proportion,sum_of_proportions
-2023,7,PimentelMLP,4.808546509593725e-05,0.006934368517249823,0.005345228593796492,0.036629774,0.28935292,0.17237055,0.5382778257779921,1.0000013024263228
+test_year,test_month,model_type,test_loss_mse_unscaled,test_loss_rmse_unscaled,test_loss_mae_unscaled,test_loss_mse,test_rmse,test_mae,theil_u1,bias_proportion,variance_proportion,covariance_proportion,sum_of_proportions
+2023,7,PimentelMLP,1043.8353321441,32.30844057122071,23.604005694933544,5.2823234000243247e-05,0.007267959415912628,0.0053098490461707115,0.038391914,0.03112157,0.051147144,0.9177305834612769,0.999999298366062

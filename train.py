@@ -1,5 +1,7 @@
 import os
+
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import torch
 import torch.nn as nn
@@ -75,7 +77,7 @@ def create_rolling_window_split(
         scaler.transform(test_df), columns=test_df.columns, index=test_df.index
     )
 
-    return train_scaled, val_scaled, test_scaled
+    return train_scaled, val_scaled, test_scaled, scaler
 
 
 def calculate_pimentel_metrics(y_true, y_pred):
@@ -89,7 +91,6 @@ def calculate_pimentel_metrics(y_true, y_pred):
     Returns:
         dict with Theil U1, Bias proportion, Variance proportion, Covariance proportion
     """
-    import numpy as np
 
     # Convert to numpy for calculations
     y_true = y_true.cpu().numpy().flatten()
@@ -230,6 +231,32 @@ def train(
             break
     return model
 
+def unscale_predictions(y_true, y_pred, scaler, target_column='CALL', feature_columns=None):
+    if feature_columns is None:
+        feature_columns = ["UNDERLYING_LAST", "STRIKE", "MTM", "VOL_90D", "RFR", "CALL"]
+    
+    # Convert tensors to numpy if needed
+    if torch.is_tensor(y_true):
+        y_true = y_true.cpu().numpy()
+    if torch.is_tensor(y_pred):
+        y_pred = y_pred.cpu().numpy()
+    
+    # Flatten if needed
+    y_true = y_true.flatten()
+    y_pred = y_pred.flatten()
+    
+    # Get the target column index
+    target_idx = feature_columns.index(target_column)
+    
+    # Get the scaling parameters for the target column
+    target_min = scaler.data_min_[target_idx]
+    target_max = scaler.data_max_[target_idx]
+    
+    # Unscale: value_original = value_scaled * (max - min) + min
+    unscaled_true = y_true * (target_max - target_min) + target_min
+    unscaled_pred = y_pred * (target_max - target_min) + target_min
+    
+    return unscaled_true, unscaled_pred
 
 def main():
     device = torch.device(
@@ -247,7 +274,7 @@ def main():
     # Note: this is the non GG
     training_columns = ["UNDERLYING_LAST", "STRIKE", "MTM", "VOL_90D", "RFR", "CALL"]
     for month in range(1, 13):
-        train_df, val_df, test_df = create_rolling_window_split(
+        train_df, val_df, test_df, scaler = create_rolling_window_split(
             df, test_year=TEST_YEAR, test_month=1, feature_columns=training_columns
         )
         print(f"Length of training set: {len(train_df)}")
@@ -286,12 +313,26 @@ def main():
         model.eval()
         X_test_device = X_test.to(device)
         y_test_device = y_test.to(device)
-
+        # TODO(vinny): unscle
         with torch.no_grad():
             test_pred = model(X_test_device)
             test_loss = criterion(test_pred, y_test_device)
             test_mae = torch.mean(torch.abs(test_pred - y_test_device)).item()
             test_metrics = calculate_pimentel_metrics(y_test_device, test_pred)
+
+             # Unscale the predictions
+            unscaled_true, unscaled_pred = unscale_predictions(
+                y_test_device, 
+                test_pred, 
+                scaler, 
+                target_column='CALL',
+                feature_columns=training_columns
+            )
+            
+            # Calculate unscaled metrics
+            unscaled_mse = np.mean((unscaled_true - unscaled_pred) ** 2)
+            unscaled_rmse = np.sqrt(unscaled_mse)
+            unscaled_mae = np.mean(np.abs(unscaled_true - unscaled_pred))
 
         eval_results = pd.DataFrame(
             [
@@ -299,6 +340,9 @@ def main():
                     "test_year": TEST_YEAR,
                     "test_month": month,
                     "model_type": "PimentelMLP",
+                    "test_loss_mse_unscaled" : unscaled_mse,
+                    "test_loss_rmse_unscaled" : unscaled_rmse,
+                    "test_loss_mae_unscaled" : unscaled_mae,
                     "test_loss_mse": test_loss.item(),
                     "test_rmse": torch.sqrt(test_loss).item(),
                     "test_mae": test_mae,
