@@ -1,5 +1,7 @@
 import os
 
+import argparse
+
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -271,8 +273,21 @@ def main():
 
     df = read_preprocessed_data(f"{DATA_DIR}/data.csv")
 
+    p = argparse.ArgumentParser(description="Train a model")
+    p.add_argument("--vol_type", type=str, required=True, choices=["normal", "GG", "random"])
+    p.add_argument("--model", type=str, required=True, default="mlp")
+    args = p.parse_args()
+
     # Note: this is the non GG
-    training_columns = ["UNDERLYING_LAST", "STRIKE", "MTM", "VOL_90D", "RFR", "CALL"]
+
+    if args.vol_type == "normal": 
+        training_columns = ["UNDERLYING_LAST", "STRIKE", "MTM", "VOL_90D", "RFR", "CALL"]
+    elif args.vol_type == "GG":
+        training_columns = ["UNDERLYING_LAST", "STRIKE", "MTM", "VOL_GG", "RFR", "CALL"]
+    else:
+        training_columns = ["UNDERLYING_LAST", "STRIKE", "MTM", "VOL_90D", "RFR", "CALL"]
+        df["VOL_90D"] = np.random.uniform(df["VOL_90D"].min(), df["VOL_90D"].max(), size=len(df))
+        
 
     # List to collect all evaluation results
     all_eval_results = []
@@ -293,7 +308,7 @@ def main():
         criterion = nn.MSELoss()
         model = train(train_df, val_df, mlp.PimentelMLP, device, criterion=criterion)
 
-        checkpoint_dir = f"checkpoints/mlp"
+        checkpoint_dir = f"checkpoints/{args.model}_{args.vol_type}"
         os.makedirs(checkpoint_dir, exist_ok=True)
         checkpoint_path = f"{checkpoint_dir}/{TEST_YEAR}_{month:02d}.pt"
         torch.save(
