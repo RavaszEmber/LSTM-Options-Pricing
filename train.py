@@ -14,7 +14,10 @@ TEST_YEAR = 2023
 
 
 def read_preprocessed_data(filename):
-    return pd.read_csv(filename, low_memory=False, index_col=0)
+    df = pd.read_csv(filename, low_memory=False, index_col=0)
+    df["CALL"] = (df["C_BID"] + df["C_ASK"]) / 2.0
+    df["QUOTE_DATE"] = pd.to_datetime(df["QUOTE_DATE"])
+    return df
 
 
 def create_rolling_window_split(
@@ -195,12 +198,6 @@ def train(
 
         avg_train_loss = total_loss / len(train_loader)
 
-        train_preds_tensor = torch.cat(all_train_preds, dim=0)
-        train_targets_tensor = torch.cat(all_train_targets, dim=0)
-        train_metrics = calculate_pimentel_metrics(
-            train_targets_tensor, train_preds_tensor
-        )
-
         if (epoch + 1) % 1 == 0:
             model.eval()
             with torch.no_grad():
@@ -231,32 +228,36 @@ def train(
             break
     return model
 
-def unscale_predictions(y_true, y_pred, scaler, target_column='CALL', feature_columns=None):
+
+def unscale_predictions(
+    y_true, y_pred, scaler, target_column="CALL", feature_columns=None
+):
     if feature_columns is None:
         feature_columns = ["UNDERLYING_LAST", "STRIKE", "MTM", "VOL_90D", "RFR", "CALL"]
-    
+
     # Convert tensors to numpy if needed
     if torch.is_tensor(y_true):
         y_true = y_true.cpu().numpy()
     if torch.is_tensor(y_pred):
         y_pred = y_pred.cpu().numpy()
-    
+
     # Flatten if needed
     y_true = y_true.flatten()
     y_pred = y_pred.flatten()
-    
+
     # Get the target column index
     target_idx = feature_columns.index(target_column)
-    
+
     # Get the scaling parameters for the target column
     target_min = scaler.data_min_[target_idx]
     target_max = scaler.data_max_[target_idx]
-    
+
     # Unscale: value_original = value_scaled * (max - min) + min
     unscaled_true = y_true * (target_max - target_min) + target_min
     unscaled_pred = y_pred * (target_max - target_min) + target_min
-    
+
     return unscaled_true, unscaled_pred
+
 
 def main():
     device = torch.device(
@@ -269,10 +270,13 @@ def main():
     print(f"Using device: {device}")
 
     df = read_preprocessed_data(f"{DATA_DIR}/data.csv")
-    df["QUOTE_DATE"] = pd.to_datetime(df["QUOTE_DATE"])
 
     # Note: this is the non GG
     training_columns = ["UNDERLYING_LAST", "STRIKE", "MTM", "VOL_90D", "RFR", "CALL"]
+
+    # List to collect all evaluation results
+    all_eval_results = []
+
     for month in range(1, 13):
         train_df, val_df, test_df, scaler = create_rolling_window_split(
             df, test_year=TEST_YEAR, test_month=1, feature_columns=training_columns
@@ -313,22 +317,22 @@ def main():
         model.eval()
         X_test_device = X_test.to(device)
         y_test_device = y_test.to(device)
-        # TODO(vinny): unscle
+
         with torch.no_grad():
             test_pred = model(X_test_device)
             test_loss = criterion(test_pred, y_test_device)
             test_mae = torch.mean(torch.abs(test_pred - y_test_device)).item()
             test_metrics = calculate_pimentel_metrics(y_test_device, test_pred)
 
-             # Unscale the predictions
+            # Unscale the predictions
             unscaled_true, unscaled_pred = unscale_predictions(
-                y_test_device, 
-                test_pred, 
-                scaler, 
-                target_column='CALL',
-                feature_columns=training_columns
+                y_test_device,
+                test_pred,
+                scaler,
+                target_column="CALL",
+                feature_columns=training_columns,
             )
-            
+
             # Calculate unscaled metrics
             unscaled_mse = np.mean((unscaled_true - unscaled_pred) ** 2)
             unscaled_rmse = np.sqrt(unscaled_mse)
@@ -340,9 +344,9 @@ def main():
                     "test_year": TEST_YEAR,
                     "test_month": month,
                     "model_type": "PimentelMLP",
-                    "test_loss_mse_unscaled" : unscaled_mse,
-                    "test_loss_rmse_unscaled" : unscaled_rmse,
-                    "test_loss_mae_unscaled" : unscaled_mae,
+                    "test_loss_mse_unscaled": unscaled_mse,
+                    "test_loss_rmse_unscaled": unscaled_rmse,
+                    "test_loss_mae_unscaled": unscaled_mae,
                     "test_loss_mse": test_loss.item(),
                     "test_rmse": torch.sqrt(test_loss).item(),
                     "test_mae": test_mae,
@@ -361,6 +365,19 @@ def main():
         eval_results.to_csv(eval_results_path, index=False)
 
         print(eval_results)
+
+        # Add to the list of all results
+        all_eval_results.append(eval_results)
+
+    # Concatenate all results into one CSV
+    if all_eval_results:
+        combined_results = pd.concat(all_eval_results, ignore_index=True)
+        combined_results_path = f"{checkpoint_dir}/all_results.csv"
+        combined_results.to_csv(combined_results_path, index=False)
+        print(f"\nAll results concatenated and saved to: {combined_results_path}")
+        print(f"Total rows: {len(combined_results)}")
+        print("\nCombined results:")
+        print(combined_results)
 
 
 if __name__ == "__main__":
