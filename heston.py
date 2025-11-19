@@ -17,17 +17,7 @@ class HestonModel:
     Contains methods to calculate the predicted call price via the Heston model
     """
 
-    def __init__(self, kappa, lambda_val, rho, eta, K, r, theta, V_0, S_0, T):
-        self.kappa = kappa
-        self.lambda_val = lambda_val
-        self.rho = rho
-        self.eta = eta
-        self.K = K
-        self.r = r
-        self.theta = theta
-        self.V_0 = V_0
-        self.S_0 = S_0
-        self.T = T
+    def __init__(self):
         pass
 
     # In my code j is the unit imaginary number (i in the paper) and i is the subscript (j in the paper)
@@ -68,38 +58,56 @@ class HestonModel:
 
 
     # TODO, could clean this up and add a description like below.
-    def call_price(self):
+    def predicted_call_price(self, current_price : float, exercise_price : float, time_to_maturity : float, risk_free_rate : float, initial_volatility : float, longterm_avg_vol : float, vol_of_vol : float, strength_of_mean_reversion : float, correlation : float, lambda_val : float) -> float:
+        """
+        Calculate European call option price using Heston model.
+
+        Parameters
+        ----------
+        current_price : float
+            The current price of the underlying asset (S_0).
+        exercise_price : float
+            The strike (exercise) price of the option (K).
+        time_to_maturity_days : float
+            Time until option maturity annualized (T).
+        risk_free_rate : float
+            Annualized risk-free interest rate (r).
+        initial_volatility : float
+            Some measure of the variance (volatility squared) of the underlying on the current day (V_0).
+        longterm_avg_vol : float
+            The longterm mean of the variance (theta).
+        vol_of_vol : float
+            The volatility of the variance process (eta).
+        strength_of_mean_reversion : float
+            The rate of mean reversion of the variance (kappa). Higher kappa reverts the variance to the longterm variance theta faster.
+        correlation : float
+            The correlation between the underlying asset price and its variance (rho). Usually negative, meaning when a stock price falls its volatility rises.
+        lambda_val : float
+            A drift adjustment term for the variance process (rho). Often set to 0. 
+
+        Returns
+        -------
+        float
+            The prediced call option price (C).
+        """
+
+        self.S_0 = current_price
+        self.K = exercise_price
+        self.T = time_to_maturity
+        self.r = risk_free_rate
+        self.V_0 = initial_volatility
+        self.theta = longterm_avg_vol
+        self.eta = vol_of_vol
+        self.kappa = strength_of_mean_reversion
+        self.rho = correlation
+        self.lambda_val = lambda_val
+
+
         P_1 = self.P(1, self.T)
         P_2 = self.P(2, self.T)
         ans = self.S_0 * P_1 - math.exp(-self.r * self.T) * self.K * P_2
+
         return ans
-
-
-    # def predicted_call_price(self, current_price : float, exercise_price : float, time_to_maturity : float, volatility : float, risk_free_rate : float) -> float:
-    #     """
-    #     Calculate European call option price using Heston model.
-
-    #     Parameters
-    #     ----------
-    #     current_price : float
-    #         The current price of the underlying asset (S_0).
-    #     exercise_price : float
-    #         The strike (exercise) price of the option (K).
-    #     time_to_maturity_days : float
-    #         Time until option maturity annualized (T)
-    #     volatility : float
-    #         Some measure of the annualized volatility of the underlying asset (sigma).
-    #     risk_free_rate : float
-    #         Annualized risk-free interest rate (r)
-
-    #     Returns
-    #     -------
-    #     float
-    #         The prediced call option price (C).
-    #     """
-
-
-    #     pass
 
 
 

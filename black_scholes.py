@@ -31,6 +31,7 @@
 
 import math
 import scipy.stats
+import numpy as np
 
 class BlackScholesModel:
     """
@@ -51,17 +52,21 @@ class BlackScholesModel:
         exercise_price : float
             The strike (exercise) price of the option (K).
         time_to_maturity_days : float
-            Time until option maturity annualized (T)
+            Time until option maturity annualized (T).
         volatility : float
             Some measure of the annualized volatility of the underlying asset (sigma).
         risk_free_rate : float
-            Annualized risk-free interest rate (r)
+            Annualized risk-free interest rate (r).
 
         Returns
         -------
         float
             The prediced call option price (C).
         """
+
+        # Check if time to expiry is 0. This avoids divide by 0 errors
+        if time_to_maturity <= 0:
+            return max(current_price - exercise_price, 0)
 
         # d_1 = (ln(S_0/K) + (r + sigma**2 / 2) * T) * (sigma * T ** 0.5) NOTE: This original formula from the paper had a typo, the term with the risk free rate should multiply by T, not divide 
         d_1 = (math.log(current_price / exercise_price) + (risk_free_rate + volatility**2 / 2) * time_to_maturity) / (volatility * time_to_maturity ** 0.5)
@@ -73,3 +78,30 @@ class BlackScholesModel:
         predicted_call_price = current_price * scipy.stats.norm.cdf(d_1) - exercise_price * math.exp(-risk_free_rate * time_to_maturity) * scipy.stats.norm.cdf(d_2)
 
         return predicted_call_price
+    
+
+
+    def predicted_call_price_vectorized(self, current_price : np.ndarray, exercise_price : np.ndarray, time_to_maturity : np.ndarray, volatility : np.ndarray, risk_free_rate : np.ndarray) -> np.ndarray:
+        """
+        Identical to predicted_call_price but vectorized
+        """
+
+        # Intrinsic value (for T <= 0)
+        intrinsic_value = np.maximum(current_price - exercise_price, 0)
+
+        # Mask for positive times to expiry
+        mask = time_to_maturity > 0
+        predicted_call_price = np.zeros_like(current_price, dtype=float)
+
+        d_1 = (np.log(current_price[mask] / exercise_price[mask]) + (risk_free_rate[mask] + volatility[mask]**2 / 2) * time_to_maturity[mask]) / (volatility[mask] * np.sqrt(time_to_maturity[mask]))
+
+        d_2 = d_1 - volatility[mask] * np.sqrt(time_to_maturity[mask])
+
+        predicted_call_price[mask] = current_price[mask] * scipy.stats.norm.cdf(d_1) - exercise_price[mask] * np.exp(-risk_free_rate[mask] * time_to_maturity[mask]) * scipy.stats.norm.cdf(d_2)
+
+
+        # Replace values for T <= 0 with intrinsic value
+        predicted_call_price[~mask] = intrinsic_value[~mask]
+
+        return predicted_call_price
+
