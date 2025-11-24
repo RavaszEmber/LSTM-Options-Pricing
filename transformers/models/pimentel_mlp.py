@@ -24,24 +24,20 @@ import logging
 class PimentelMLP(nn.Module):
     def __init__(
         self,
-        input_feature_size=5,
+        n_features=5,
         output_size=1,
         number_layers=4,
         units_per_layer=64,
-        device="cpu",
-        momentum=0.1,
+        batch_norm_momentum=0.1,
+        # Below are not used but there for backwards compatibility with other models
+        dropout=None
     ):
         super().__init__()
-        self._input_feature_size = input_feature_size
+        self._input_feature_size = n_features
         self._output_size = output_size
         self._number_layers = number_layers
         self._units_per_layer = units_per_layer
-        self._device = device
-        self._momentum = momentum
-
-        logging.info(
-            f"Pimentel MLP initialized. {self._input_feature_size=} {self._output_size=} {self._number_layers=} {self._units_per_layer=} {self._device=} {self._momentum=}"
-        )
+        self._momentum = batch_norm_momentum
 
         layers = self.generate_layers()
         self._network = nn.Sequential(*layers)
@@ -65,7 +61,6 @@ class PimentelMLP(nn.Module):
                 nn.Linear(
                     in_features=in_features,
                     out_features=out_features,
-                    device=self._device,
                 )
             )
             if not is_last_layer:
@@ -73,11 +68,11 @@ class PimentelMLP(nn.Module):
                     nn.BatchNorm1d(
                         num_features=out_features,
                         momentum=self._momentum,
-                        device=self._device,
                     )
                 )
                 layers.append(nn.ReLU())
         return layers
 
-    def forward(self, X):
-        return self._network(X)
+    def forward(self, X, _):
+        # no decode here, but for backwards compatibility taking in 2 args
+        return self._network(X.squeeze(1)).unsqueeze(1) 
