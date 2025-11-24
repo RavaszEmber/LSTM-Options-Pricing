@@ -5,6 +5,7 @@ from .encoder_only_transformer import EncoderOnlyTransformer
 from .encoder_decoder_transformer import EncoderDecoderTransformer
 from .lstm_transformer import LSTM32_TX
 from .pimentel_mlp import PimentelMLP
+from .lstm_option_pricer import LSTMOptionPricer
 # from .temporal_fusion_transformer import TemporalFusionTransformer
 
 MODEL_REGISTRY = {
@@ -13,6 +14,7 @@ MODEL_REGISTRY = {
     'encoder_decoder_transformer': EncoderDecoderTransformer,
     'lstm32_tx': LSTM32_TX,
     'pimentel_mlp': PimentelMLP
+    'lstm_option_pricer': LSTMOptionPricer,
 }
 
 def get_model(model_name, **kwargs):
