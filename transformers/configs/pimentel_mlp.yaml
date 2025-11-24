@@ -1,0 +1,68 @@
+# configs/pimentel_mlp
+# R. Pimentel et al. Table 3 defines the MLP structures
+
+model:
+  name: pimentel_mlp
+  n_features: 5  # Will be set dynamically
+  # lstm_units: 32  # Single LSTM layer with 32 units
+  # d_model: 64
+  # n_heads: 4
+  # n_transformer_blocks: 4  # 4 transformer blocks as per paper
+  # d_ff: 256
+  number_layers: 4
+  units_per_layer: 64
+  dropout: 0.1
+  batch_norm_momentum: 0.300571 
+
+data:
+  path: ../data/data.csv
+  train_months: 8
+  val_months: 1
+  test_month: 1
+  test_year: 2023
+  
+  # Sequence parameters optimized for options
+  seq_len: 1
+  label_len: 1
+  pred_len: 1
+  
+  # Sequential mode with lifecycle grouping
+  sequential: false
+  # group_by: ["STRIKE", "MONEYNESS_BUCKET"]
+  # min_chain_length: 18
+  # stratify_by_horizon: true
+  
+  # Features with lifecycle information
+  feature_columns:
+    - STRIKE
+    - UNDERLYING_LAST
+    - MTM
+    - RFR
+    - VOL_90D
+  
+  target_column: C_MID
+
+training:
+  batch_size: 4096
+  learning_rate: 0.004469 
+  weight_decay: 0.000425 
+  epochs: 100
+  early_stopping_patience: 20
+  grad_clip: 1.0
+  optimizer: adamw
+  
+  scheduler:
+    type: None
+    # type: reduce_on_plateau
+    # factor: 0.5
+    # patience: 10
+    # min_lr: 1.0e-6
+
+hardware:
+  num_workers: 4
+  pin_memory: true
+  seed: 42
+
+output:
+  save_dir: ./results/pimentel_mlp
+  log_interval: 100
