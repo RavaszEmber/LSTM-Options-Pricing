@@ -276,6 +276,8 @@ def main():
     p = argparse.ArgumentParser(description="Train a model")
     p.add_argument("--vol_type", type=str, required=True, choices=["normal", "GG", "random"])
     p.add_argument("--model", type=str, required=True, default="mlp")
+    p.add_argument("--start-month", type=int, required=True, default=1)
+    p.add_argument("--end-month", type=int, required=True, default=1)
     args = p.parse_args()
 
     # Note: this is the non GG
