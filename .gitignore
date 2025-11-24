@@ -5,3 +5,4 @@ docs/references
 .DS_Store
 __pycache__/
 
+data.csv
