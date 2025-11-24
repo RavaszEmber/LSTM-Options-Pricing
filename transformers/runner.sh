@@ -11,3 +11,6 @@
 
 # LSTM32+TX
 ./batch_train.sh configs/lstm32_transformer.yaml 8 ./results/lstm32_tx/batch
+
+# LSTM Option Pricer (legacy LSTM adapted)
+./batch_train.sh configs/lstm_option_pricer.yaml 8 ./results/lstm_option_pricer/batch
