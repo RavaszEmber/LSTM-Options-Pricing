@@ -15,7 +15,7 @@ model:
   batch_norm_momentum: 0.300571 
 
 data:
-  path: ../data/data.csv
+  path: ../data.csv
   train_months: 8
   val_months: 1
   test_month: 1
@@ -57,6 +57,19 @@ training:
     # factor: 0.5
     # patience: 10
     # min_lr: 1.0e-6
+
+hyperopt:
+  enabled: true
+  trials: 50
+  optimize_on_month: 1
+  search_space:
+    number_layers: [2, 8]
+    units_per_layer: [16, 32, 64, 128]
+    batch_norm_momentum: [0.3, 0.4]
+    dropout: [0.05, 0.1, 0.15, 0.2]
+    learning_rate: [1.0e-5, 1.0e-3]
+    batch_size: [1024, 2048, 4096]
+    weight_decay: [1.0e-6, 1.0e-3]
 
 hardware:
   num_workers: 4

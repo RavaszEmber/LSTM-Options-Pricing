@@ -1,29 +1,34 @@
-# LSTM Option Pricer configuration
-# Model: LSTMOptionPricer (adapted from legacy LSTM.py)
-model:
-  name: lstm_option_pricer
-  n_features: 8   # placeholder - train.py will overwrite with actual feature count
-  hidden_size: 64
-  num_layers: 6
-  dropout_last: 0.0
+# Encoder-Only Transformer Configuration
+# Simplified transformer with no decoder - uses only historical sequence
 
+model:
+  name: encoder_only_transformer
+  n_features: 5  # Will be set dynamically based on feature_columns
+  d_model: 32
+  n_heads: 4
+  n_encoder_layers: 2
+  d_ff: 128
+  dropout: 0.1
+
+# Data parameters
 data:
   path: ../data.csv
   train_months: 8
   val_months: 1
   test_month: 1
   test_year: 2023
-
-  # Sequence parameters: adjust seq_len to match your model (legacy LSTM used 5)
-  seq_len: 5
-  label_len: 1
+  
+  # Sequence parameters
+  seq_len: 15
+  label_len: 0
   pred_len: 1
 
   sequential: true
-  group_by: ["STRIKE", "MONEYNESS_BUCKET"]
-  min_chain_length: 5
-  stratify_by_horizon: true
-
+  group_by: ["STRIKE", "MONEYNESS_BUCKET"]  # Group by strike and moneyness
+  min_chain_length: 16                       # seq_len + pred_len (encoder-only)
+  stratify_by_horizon: true                  # Track horizon distribution
+  
+  # Features
   feature_columns:
     - STRIKE
     - UNDERLYING_LAST
@@ -35,18 +40,23 @@ data:
     - MONEYNESS
   target_column: C_MID
 
+# Training parameters
 training:
-  batch_size: 64 #64
-  learning_rate: 0.0002
-  weight_decay: 0.0
+  batch_size: 64  # Per GPU
+  learning_rate: 0.0001
+  weight_decay: 0.0001
   epochs: 100
-  early_stopping_patience: 10
+  early_stopping_patience: 20
   grad_clip: 1.0
+  
+  # Optimizer
   optimizer: adam
+  
+  # Scheduler
   scheduler:
     type: reduce_on_plateau
     factor: 0.5
-    patience: 5
+    patience: 10
     min_lr: 1.0e-6
 
 hyperopt:
@@ -65,11 +75,13 @@ hyperopt:
     seq_len: [10, 15]
     # label_len: [0, 5]
 
+# Hardware
 hardware:
   num_workers: 4
   pin_memory: true
   seed: 42
 
+# Output
 output:
-  save_dir: ./results/lstm_option_pricer
+  save_dir: ./results/encoder_only
   log_interval: 100
