@@ -1,22 +1,16 @@
 #!/usr/bin/env python
 """Multi-GPU training script for transformer-based option pricing"""
 
-import os
-import sys
 import argparse
 import yaml
 import time
-from pathlib import Path
 
-import numpy as np
-import pandas as pd
 import torch
 import torch.distributed as dist
 import torch.nn as nn
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.optim as optim
 from torch.utils.data import DataLoader, DistributedSampler
-from tqdm import tqdm
 import warnings
 
 # Local imports
@@ -339,6 +333,8 @@ def main():
     # Device setup
     if torch.cuda.is_available():
         device = torch.device(f'cuda:{local_rank}')
+    elif torch.mps.is_available():
+        device = torch.device("mps")
     else:
         device = torch.device('cpu')
         if is_main_process(rank):
