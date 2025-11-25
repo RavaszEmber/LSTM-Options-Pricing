@@ -13,7 +13,7 @@ MODEL_REGISTRY = {
     'encoder_only_transformer': EncoderOnlyTransformer,
     'encoder_decoder_transformer': EncoderDecoderTransformer,
     'lstm32_tx': LSTM32_TX,
-    'pimentel_mlp': PimentelMLP
+    'pimentel_mlp': PimentelMLP,
     'lstm_option_pricer': LSTMOptionPricer,
 }
 
