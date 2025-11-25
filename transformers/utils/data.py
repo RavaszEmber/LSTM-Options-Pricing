@@ -359,6 +359,14 @@ def create_rolling_window_split(
     # Compute target column from bid-ask midpoint
     df[target_column] = df[['C_BID', 'C_ASK']].apply(pd.to_numeric, errors='coerce').mean(axis=1)
 
+    # random perturb
+    df["VOL_RANDOM_PERTURB"] = df["VOL_90D"] * (1 + np.random.normal(0, 0.1, len(df)))
+
+    df["VOL_RANDOM"] = np.random.normal(0, 0.1, len(df))
+
+    # constant
+    df["VOL_CONSTANT"] = df["VOL_90D"].mean()
+
     # Encode categorical features if present
     if sequential and group_by:
         df, feature_columns = encode_categorical_features(df, feature_columns)

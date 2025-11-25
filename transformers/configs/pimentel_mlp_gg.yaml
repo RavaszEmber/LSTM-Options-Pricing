@@ -65,3 +65,13 @@ hardware:
 output:
   save_dir: ./results/pimentel_mlp_gg
   log_interval: 100
+
+hyperopt:
+  enabled: true
+  trials: 50
+  optimize_on_month: 1
+  search_space:
+    dropout: [0.05, 0.1, 0.15, 0.2]
+    learning_rate: [1.0e-5, 1.0e-3]
+    batch_size: [32, 64, 128]
+    weight_decay: [1.0e-6, 1.0e-3]

@@ -9,10 +9,10 @@ model:
   # n_heads: 4
   # n_transformer_blocks: 4  # 4 transformer blocks as per paper
   # d_ff: 256
-  number_layers: 4
-  units_per_layer: 32
+  number_layers: 6
+  units_per_layer: 96
   dropout: 0.1
-  batch_norm_momentum: 0.300571 
+  batch_norm_momentum: 0.327534
 
 data:
   path: ../data/data.csv
@@ -32,20 +32,19 @@ data:
   # min_chain_length: 18
   # stratify_by_horizon: true
   
-  # Features with lifecycle information
   feature_columns:
     - STRIKE
     - UNDERLYING_LAST
     - MTM
     - RFR
-    - VOL_90D
-  
+    - VOL_RANDOM_PERTURB 
+
   target_column: C_MID
 
 training:
-  batch_size: 4096
-  learning_rate: 0.004469 
-  weight_decay: 0.000425 
+  batch_size: 2048
+  learning_rate: 0.004102
+  weight_decay: 0.000202
   epochs: 100
   early_stopping_patience: 20
   grad_clip: 1.0
@@ -64,7 +63,7 @@ hardware:
   seed: 42
 
 output:
-  save_dir: ./results/pimentel_mlp
+  save_dir: ./results/pimentel_mlp_gg
   log_interval: 100
 
 hyperopt:
