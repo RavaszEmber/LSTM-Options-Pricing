@@ -288,20 +288,24 @@ def create_option_sequences(
     return X_enc_list, X_dec_list, y_list, dates_list, metadata_list
 
 
-def validate_horizon_coverage(train_metadata, val_metadata, test_metadata, rank):
+def validate_horizon_coverage(train_metadata, val_metadata, test_metadata, rank, skip_on_empty=False):
     """
     Ensure all expiration horizons are represented in train/val/test splits.
-
+    
     Args:
         train_metadata: List of metadata dicts from training data
         val_metadata: List of metadata dicts from validation data
         test_metadata: List of metadata dicts from test data
         rank: Process rank for distributed training
+        skip_on_empty: If True, return False instead of raising error for empty test horizons
+        
+    Returns:
+        bool: True if validation passes, False if should skip (when skip_on_empty=True)
     """
     from .training import is_main_process
 
     if not is_main_process(rank):
-        return
+        return True
 
     train_horizons = set(m['horizon'] for m in train_metadata if m and 'horizon' in m)
     val_horizons = set(m['horizon'] for m in val_metadata if m and 'horizon' in m)
@@ -314,6 +318,15 @@ def validate_horizon_coverage(train_metadata, val_metadata, test_metadata, rank)
     print(f"Val horizons:   {sorted(val_horizons)}")
     print(f"Test horizons:  {sorted(test_horizons)}")
 
+    # Check for empty test horizons
+    if not test_horizons:
+        if skip_on_empty:
+            print("WARNING: Test set has no expiration horizons - SKIPPING")
+            print(f"{'='*60}\n")
+            return False
+        else:
+            raise ValueError("Test set has no expiration horizons! Increase min_chain_length or check data filtering.")
+    
     missing_val = train_horizons - val_horizons
     missing_test = train_horizons - test_horizons
 
@@ -321,11 +334,44 @@ def validate_horizon_coverage(train_metadata, val_metadata, test_metadata, rank)
         print(f"WARNING: Validation missing horizons: {missing_val}")
     if missing_test:
         print(f"WARNING: Test missing horizons: {missing_test}")
+        print(f"Consider reducing min_chain_length or adjusting date ranges")
 
     if not missing_val and not missing_test:
         print("All horizons represented in train/val/test")
 
     print(f"{'='*60}\n")
+    return True
+
+
+def ensure_minimum_horizon_coverage(df, min_sequences_per_horizon=10):
+    """
+    Filter data to ensure minimum sequences per horizon.
+    
+    Args:
+        df: DataFrame with EXPIRY_HORIZON column
+        min_sequences_per_horizon: Minimum sequences required per horizon
+        
+    Returns:
+        Filtered DataFrame
+    """
+    if 'EXPIRY_HORIZON' not in df.columns:
+        return df
+    
+    # Count potential sequences per horizon
+    horizon_counts = df['EXPIRY_HORIZON'].value_counts()
+    valid_horizons = horizon_counts[horizon_counts >= min_sequences_per_horizon].index
+    
+    if len(valid_horizons) == 0:
+        print(f"WARNING: No horizons have >= {min_sequences_per_horizon} sequences")
+        return df
+    
+    # Filter to valid horizons only
+    filtered_df = df[df['EXPIRY_HORIZON'].isin(valid_horizons)].copy()
+    
+    print(f"Filtered to {len(valid_horizons)} horizons with >= {min_sequences_per_horizon} sequences each")
+    print(f"Kept {len(filtered_df):,} / {len(df):,} records ({100*len(filtered_df)/len(df):.1f}%)")
+    
+    return filtered_df
 
 
 def create_rolling_window_split(
@@ -400,6 +446,14 @@ def create_rolling_window_split(
     test_df = df[
         (df['QUOTE_DATE'] >= test_start) & (df['QUOTE_DATE'] <= test_end)
     ].copy()
+    
+    # Ensure minimum horizon coverage if stratifying
+    if sequential and stratify_by_horizon:
+        if is_main_process(rank):
+            print("Ensuring minimum horizon coverage...")
+        train_df = ensure_minimum_horizon_coverage(train_df, min_sequences_per_horizon=20)
+        val_df = ensure_minimum_horizon_coverage(val_df, min_sequences_per_horizon=5)
+        test_df = ensure_minimum_horizon_coverage(test_df, min_sequences_per_horizon=5)
 
     if sequential:
         # Use leak-free sequential approach grouped by option contracts
@@ -440,12 +494,16 @@ def create_rolling_window_split(
 
         # Validate horizon coverage if stratifying
         if stratify_by_horizon:
-            validate_horizon_coverage(
+            horizon_valid = validate_horizon_coverage(
                 train_data.get('metadata', []),
                 val_data.get('metadata', []),
                 test_data.get('metadata', []),
-                rank
+                rank,
+                skip_on_empty=True
             )
+            if not horizon_valid:
+                # Return None to signal skip
+                return None, None, None, scaler
 
         return train_data, val_data, test_data, scaler
 
