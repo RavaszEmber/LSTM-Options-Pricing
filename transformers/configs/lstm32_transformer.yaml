@@ -27,7 +27,7 @@ data:
   # Sequential mode with lifecycle grouping
   sequential: true
   group_by: ["STRIKE", "MONEYNESS_BUCKET"]
-  min_chain_length: 18
+  min_chain_length: 19               # seq_len + label_len + pred_len 
   stratify_by_horizon: true
   
   # Features with lifecycle information
@@ -57,6 +57,22 @@ training:
     factor: 0.5
     patience: 10
     min_lr: 1.0e-6
+
+hyperopt:
+  enabled: true
+  trials: 50
+  optimize_on_month: 1
+  search_space:
+    d_model: [24, 36, 48, 64]
+    n_heads: [2, 3, 4, 6]
+    n_encoder_layers: [1, 2, 3]
+    n_decoder_layers: [1, 2, 3]
+    dropout: [0.05, 0.1, 0.15, 0.2]
+    learning_rate: [1.0e-5, 1.0e-3]
+    batch_size: [32, 64, 128, 256, 512, 1024, 2048, 4096]
+    weight_decay: [1.0e-6, 1.0e-3]
+    seq_len: [10, 15]
+    label_len: [0, 5]
 
 hardware:
   num_workers: 4

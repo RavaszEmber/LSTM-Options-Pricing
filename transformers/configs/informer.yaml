@@ -25,7 +25,7 @@ data:
 
   sequential: true
   group_by: ["STRIKE", "MONEYNESS_BUCKET"]  # Group by strike and moneyness
-  min_chain_length: 18                       # seq_len + label_len + pred_len
+  min_chain_length: 19                       # seq_len + label_len + pred_len
   stratify_by_horizon: true                  # Track horizon distribution
 
   # Features
@@ -58,6 +58,26 @@ training:
     factor: 0.5
     patience: 10
     min_lr: 1.0e-6
+
+# Hyperparameter optimization
+hyperopt:
+  enabled: false
+  trials: 50
+  optimize_on_month: 1  # First month for optimization
+  search_space:
+    # Model parameters
+    d_model: [24, 36, 48, 64]
+    n_heads: [2, 3, 4, 6]
+    n_encoder_layers: [1, 2, 3]
+    n_decoder_layers: [1, 2, 3]
+    dropout: [0.05, 0.1, 0.15, 0.2]
+    # Training parameters
+    learning_rate: [1e-5, 1e-3]  # log scale
+    batch_size: [32, 64, 128, 256, 512, 1024, 2048, 4096]
+    weight_decay: [1e-6, 1e-3]  # log scale
+    # Sequence parameters
+    seq_len: [10, 25]
+    label_len: [0, 5]
 
 # Hardware
 hardware:

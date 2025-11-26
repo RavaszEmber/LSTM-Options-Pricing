@@ -20,6 +20,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
 
+# Optional import for hyperparameter optimization
+try:
+    import optuna
+    OPTUNA_AVAILABLE = True
+except ImportError:
+    OPTUNA_AVAILABLE = False
+    print("Warning: Optuna not available. Hyperparameter optimization disabled.")
+
 # Set style for plots
 sns.set_style("whitegrid")
 plt.rcParams['figure.figsize'] = (12, 8)
@@ -33,9 +41,117 @@ def load_config(config_path):
     return config
 
 
+def optimize_hyperparameters(base_config, output_dir):
+    """
+    Run hyperparameter optimization on first month.
+    
+    Returns:
+        Dictionary of optimized parameters
+    """
+    if not OPTUNA_AVAILABLE:
+        print("Optuna not available. Skipping hyperparameter optimization.")
+        return {}
+    
+    from optuna.samplers import TPESampler
+    from optuna.pruners import MedianPruner
+    
+    def objective(trial):
+        # Create trial config (deep copy to avoid modifying base_config)
+        import copy
+        config = copy.deepcopy(base_config)
+        search_space = config['hyperopt']['search_space']
+        
+        # Sample hyperparameters
+        for param, bounds in search_space.items():
+            if param in ['learning_rate', 'weight_decay']:
+                config['training'][param] = trial.suggest_float(param, bounds[0], bounds[1], log=True)
+            elif param == 'batch_size':
+                config['training'][param] = trial.suggest_categorical(param, bounds)
+            elif param in ['seq_len', 'label_len']:
+                config['data'][param] = trial.suggest_int(param, bounds[0], bounds[1])
+            elif param in config['model']:
+                if isinstance(bounds, list) and len(bounds) == 2 and isinstance(bounds[0], (int, float)):
+                    if isinstance(bounds[0], int):
+                        config['model'][param] = trial.suggest_int(param, bounds[0], bounds[1])
+                    else:
+                        config['model'][param] = trial.suggest_float(param, bounds[0], bounds[1])
+                else:
+                    config['model'][param] = trial.suggest_categorical(param, bounds)
+        
+        # Update min_chain_length based on model type
+        if config['model']['name'] == 'encoder_only_transformer':
+            # Encoder-only doesn't use label_len
+            config['data']['min_chain_length'] = config['data']['seq_len'] + config['data']['pred_len']
+        else:
+            # Standard encoder-decoder calculation
+            config['data']['min_chain_length'] = config['data']['seq_len'] + config['data']['label_len'] + config['data']['pred_len']
+        
+        # Set to first month with reduced epochs for optimization
+        config['data']['test_month'] = config['hyperopt']['optimize_on_month']
+        config['training']['epochs'] = 30  # Reduced for hyperparameter optimization
+        config['training']['early_stopping_patience'] = 10  # Reduced for faster trials
+        config['output']['save_dir'] = f"{output_dir}/trial_{trial.number}"
+        
+        # Save trial config
+        trial_config_path = f"{output_dir}/trial_{trial.number}_config.yaml"
+        os.makedirs(os.path.dirname(trial_config_path), exist_ok=True)
+        with open(trial_config_path, 'w') as f:
+            yaml.dump(config, f)
+        
+        # Run training
+        success = train_single_model(trial_config_path, num_gpus=8)
+        if not success[0]:
+            return float('inf')
+        
+        # Extract RMSE
+        results = load_results(config['output']['save_dir'])
+        if results is None:
+            return float('inf')
+        
+        return results['results']['rmse']
+    
+    # Create study
+    study = optuna.create_study(
+        direction='minimize',
+        sampler=TPESampler(seed=42),
+        pruner=MedianPruner(n_startup_trials=5, n_warmup_steps=10)
+    )
+    
+    # Optimize with error handling per trial
+    n_trials = base_config['hyperopt']['trials']
+    print(f"Starting hyperparameter optimization with {n_trials} trials...")
+    
+    def safe_objective(trial):
+        try:
+            return objective(trial)
+        except Exception as e:
+            print(f"Trial {trial.number} failed: {e} - SKIPPING")
+            return float('inf')
+    
+    study.optimize(safe_objective, n_trials=n_trials)
+    
+    # Save best parameters
+    best_params = study.best_params
+    best_rmse = study.best_value
+    
+    print(f"Optimization complete. Best RMSE: ${best_rmse:.2f}")
+    print(f"Best parameters: {best_params}")
+    
+    # Save results
+    with open(f"{output_dir}/optimization_results.json", 'w') as f:
+        json.dump({
+            'best_params': best_params,
+            'best_rmse': best_rmse,
+            'n_trials': len(study.trials)
+        }, f, indent=2)
+    
+    return best_params
+
+
 def create_monthly_configs(base_config_path, output_dir, year=2023):
     """
     Create 12 monthly config files from base config.
+    Includes hyperparameter optimization if enabled.
     
     Args:
         base_config_path: Path to base config file
@@ -55,11 +171,42 @@ def create_monthly_configs(base_config_path, output_dir, year=2023):
         'July', 'August', 'September', 'October', 'November', 'December'
     ]
     
+    # Run hyperparameter optimization if enabled
+    optimized_params = {}
+    if base_config.get('hyperopt', {}).get('enabled', False):
+        print("="*80)
+        print("HYPERPARAMETER OPTIMIZATION ENABLED")
+        print("="*80)
+        hyperopt_dir = os.path.join(output_dir, 'hyperopt')
+        optimized_params = optimize_hyperparameters(base_config, hyperopt_dir)
+    
     for month in range(1, 13):
         # Create config for this month
         config = base_config.copy()
         config['data']['test_month'] = month
         config['data']['test_year'] = year
+        
+        # Apply optimized parameters
+        if optimized_params:
+            for param, value in optimized_params.items():
+                if param in ['learning_rate', 'batch_size', 'weight_decay']:
+                    config['training'][param] = value
+                elif param in ['seq_len', 'label_len']:
+                    config['data'][param] = value
+                elif param in config['model']:
+                    config['model'][param] = value
+            
+            # Update min_chain_length based on model type
+            if config['model']['name'] == 'encoder_only_transformer':
+                # Encoder-only doesn't use label_len
+                config['data']['min_chain_length'] = config['data']['seq_len'] + config['data']['pred_len']
+            else:
+                # Standard encoder-decoder calculation
+                config['data']['min_chain_length'] = config['data']['seq_len'] + config['data']['label_len'] + config['data']['pred_len']
+        
+        # Remove hyperopt section from monthly configs
+        if 'hyperopt' in config:
+            del config['hyperopt']
         
         # Update output directory
         model_name = config['model']['name']
@@ -73,7 +220,12 @@ def create_monthly_configs(base_config_path, output_dir, year=2023):
             yaml.dump(config, f, default_flow_style=False)
         
         monthly_configs.append((month, month_names[month-1], config_path))
-        print(f"Created config for {month_names[month-1]} ({month}): {config_path}")
+        if not optimized_params:  # Only print if not optimizing
+            print(f"Created config for {month_names[month-1]} ({month}): {config_path}")
+    
+    if optimized_params:
+        print(f"\nCreated 12 monthly configs with optimized parameters")
+        print(f"Optimization results saved to: {output_dir}/hyperopt/optimization_results.json")
     
     return monthly_configs
 
