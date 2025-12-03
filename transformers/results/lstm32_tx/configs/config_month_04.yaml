@@ -1,0 +1,54 @@
+data:
+  feature_columns:
+  - STRIKE
+  - UNDERLYING_LAST
+  - MTM
+  - RFR
+  - VOL_GG
+  - DTE
+  - DTE_NORMALIZED
+  - MONEYNESS
+  group_by:
+  - STRIKE
+  - MONEYNESS_BUCKET
+  label_len: 3
+  min_chain_length: 14
+  path: ../data.csv
+  pred_len: 1
+  seq_len: 10
+  sequential: true
+  stratify_by_horizon: true
+  target_column: C_MID
+  test_month: 4
+  test_year: 2023
+  train_months: 8
+  val_months: 1
+hardware:
+  num_workers: 4
+  pin_memory: true
+  seed: 42
+model:
+  d_ff: 256
+  d_model: 36
+  dropout: 0.05
+  lstm_units: 32
+  n_features: 8
+  n_heads: 4
+  n_transformer_blocks: 4
+  name: lstm32_tx
+output:
+  log_interval: 100
+  save_dir: ./results/lstm32_tx/month_04_April
+training:
+  batch_size: 32
+  early_stopping_patience: 20
+  epochs: 100
+  grad_clip: 1.0
+  learning_rate: 0.00019029252412458756
+  optimizer: adam
+  scheduler:
+    factor: 0.5
+    min_lr: 1.0e-06
+    patience: 10
+    type: reduce_on_plateau
+  weight_decay: 1.0737166053926645e-05
