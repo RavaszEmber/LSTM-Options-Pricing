@@ -1,0 +1,14 @@
+{
+  "best_params": {
+    "d_model": 24,
+    "n_heads": 2,
+    "n_encoder_layers": 2,
+    "dropout": 0.05,
+    "learning_rate": 4.5597354003152425e-05,
+    "batch_size": 64,
+    "weight_decay": 1.851224009721425e-06,
+    "seq_len": 14
+  },
+  "best_rmse": 59.73050835077328,
+  "n_trials": 50
+}

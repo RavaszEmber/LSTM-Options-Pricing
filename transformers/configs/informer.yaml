@@ -1,0 +1,91 @@
+# Model configuration
+model:
+  name: informer
+  n_features: 5  # Will be set dynamically
+  d_model: 36
+  n_heads: 3
+  n_encoder_layers: 1
+  n_decoder_layers: 2
+  d_ff: 8
+  dropout: 0.06
+  factor: 3
+
+# Data parameters
+data:
+  path: ../data.csv
+  train_months: 8
+  val_months: 1
+  test_month: 1
+  test_year: 2023
+  
+  # Sequence parameters
+  seq_len: 15
+  label_len: 3
+  pred_len: 1
+
+  sequential: true
+  group_by: ["STRIKE", "MONEYNESS_BUCKET"]  # Group by strike and moneyness
+  min_chain_length: 19                       # seq_len + label_len + pred_len
+  stratify_by_horizon: true                  # Track horizon distribution
+
+  # Features
+  feature_columns:
+    - STRIKE
+    - UNDERLYING_LAST
+    - MTM
+    - RFR
+    - VOL_GG
+    - DTE
+    - DTE_NORMALIZED
+    - MONEYNESS
+  target_column: C_MID
+
+# Training parameters
+training:
+  batch_size: 64  # Per GPU
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  epochs: 100
+  early_stopping_patience: 20
+  grad_clip: 1.0
+  
+  # Optimizer
+  optimizer: adam
+  
+  # Scheduler
+  scheduler:
+    type: reduce_on_plateau
+    factor: 0.5
+    patience: 10
+    min_lr: 1.0e-6
+
+# Hyperparameter optimization
+hyperopt:
+  enabled: false
+  trials: 50
+  optimize_on_month: 1  # First month for optimization
+  search_space:
+    # Model parameters
+    d_model: [24, 36, 48, 64]
+    n_heads: [2, 3, 4, 6]
+    n_encoder_layers: [1, 2, 3]
+    n_decoder_layers: [1, 2, 3]
+    dropout: [0.05, 0.1, 0.15, 0.2]
+    # Training parameters
+    learning_rate: [1e-5, 1e-3]  # log scale
+    batch_size: [32, 64, 128, 256, 512, 1024, 2048, 4096]
+    weight_decay: [1e-6, 1e-3]  # log scale
+    # Sequence parameters
+    seq_len: [10, 25]
+    label_len: [0, 5]
+
+# Hardware
+hardware:
+  num_workers: 4
+  pin_memory: true
+  seed: 42
+
+# Output
+output:
+  save_dir: ./results/informer
+  log_interval: 100

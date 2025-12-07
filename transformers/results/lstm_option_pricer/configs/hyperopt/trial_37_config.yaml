@@ -1,0 +1,92 @@
+data:
+  feature_columns:
+  - STRIKE
+  - UNDERLYING_LAST
+  - MTM
+  - RFR
+  - VOL_GG
+  - DTE
+  - DTE_NORMALIZED
+  - MONEYNESS
+  group_by:
+  - STRIKE
+  - MONEYNESS_BUCKET
+  label_len: 1
+  min_chain_length: 13
+  path: ../data.csv
+  pred_len: 1
+  seq_len: 11
+  sequential: true
+  stratify_by_horizon: true
+  target_column: C_MID
+  test_month: 1
+  test_year: 2023
+  train_months: 8
+  val_months: 1
+hardware:
+  num_workers: 4
+  pin_memory: true
+  seed: 42
+hyperopt:
+  enabled: true
+  optimize_on_month: 1
+  search_space:
+    batch_size:
+    - 32
+    - 64
+    - 128
+    d_model:
+    - 24
+    - 36
+    - 48
+    - 64
+    dropout:
+    - 0.05
+    - 0.1
+    - 0.15
+    - 0.2
+    learning_rate:
+    - 1.0e-05
+    - 0.001
+    n_decoder_layers:
+    - 1
+    - 2
+    - 3
+    n_encoder_layers:
+    - 1
+    - 2
+    - 3
+    n_heads:
+    - 2
+    - 3
+    - 4
+    - 6
+    seq_len:
+    - 10
+    - 15
+    weight_decay:
+    - 1.0e-06
+    - 0.001
+  trials: 50
+model:
+  dropout_last: 0.0
+  hidden_size: 64
+  n_features: 8
+  name: lstm_option_pricer
+  num_layers: 6
+output:
+  log_interval: 100
+  save_dir: ./results/lstm_option_pricer/configs/hyperopt/trial_37
+training:
+  batch_size: 32
+  early_stopping_patience: 10
+  epochs: 30
+  grad_clip: 1.0
+  learning_rate: 0.0008293152085258363
+  optimizer: adam
+  scheduler:
+    factor: 0.5
+    min_lr: 1.0e-06
+    patience: 5
+    type: reduce_on_plateau
+  weight_decay: 3.1648710611170302e-06

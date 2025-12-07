@@ -1,0 +1,16 @@
+# Requirements for transformers training and preprocessing
+# Core runtime
+torch>=2.9.0
+pandas>=2.3.3
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.4
+matplotlib>=3.8
+seaborn>=0.12
+pyyaml>=6.0
+tqdm>=4.65
+# GARCH / volatility estimation used in Preprocessing.ipynb
+arch>=5.3
+# Optional tooling
+ruff>=0.14.2
+# Note: some packages (torch) may prefer installation via platform-specific wheels (CUDA).
