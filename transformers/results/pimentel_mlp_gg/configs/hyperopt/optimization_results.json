@@ -1,0 +1,13 @@
+{
+  "best_params": {
+    "number_layers": 4,
+    "units_per_layer": 128,
+    "batch_norm_momentum": 0.4,
+    "dropout": 0.1,
+    "learning_rate": 2.3102018878452926e-05,
+    "batch_size": 4096,
+    "weight_decay": 1.9762189340280066e-05
+  },
+  "best_rmse": Infinity,
+  "n_trials": 50
+}
