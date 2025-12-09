@@ -6,7 +6,7 @@
     "std_mae": 0.3695578870030586,
     "mean_theil_u1": 1.2323889815209517,
     "std_theil_u1": 1.991899447400699,
-    "total_training_time_hours": 0.2892753658692042
+    "total_training_time_hours": 0.28774220016267565
   },
   "monthly": [
     {
@@ -16,7 +16,7 @@
       "mae": 0.03878205269575119,
       "theil_u1": 0.457335510097074,
       "epochs_trained": 52,
-      "training_time": 108.3365330696106
+      "training_time": 109.08365726470947
     },
     {
       "month": 2,
@@ -25,7 +25,7 @@
       "mae": 0.08708608895540237,
       "theil_u1": 0.6935061742222673,
       "epochs_trained": 43,
-      "training_time": 91.2074921131134
+      "training_time": 91.6189501285553
     },
     {
       "month": 3,
@@ -34,7 +34,7 @@
       "mae": 1.3585608005523682,
       "theil_u1": 7.498901050422583,
       "epochs_trained": 22,
-      "training_time": 46.503458976745605
+      "training_time": 45.27537155151367
     },
     {
       "month": 4,
@@ -43,7 +43,7 @@
       "mae": 0.2647450864315033,
       "theil_u1": 1.4521655913996463,
       "epochs_trained": 40,
-      "training_time": 83.05182933807373
+      "training_time": 82.38371634483337
     },
     {
       "month": 5,
@@ -52,7 +52,7 @@
       "mae": 0.11421205848455429,
       "theil_u1": 0.7536591645837067,
       "epochs_trained": 46,
-      "training_time": 95.86420512199402
+      "training_time": 96.4309914112091
     },
     {
       "month": 6,
@@ -61,7 +61,7 @@
       "mae": 0.08600496500730515,
       "theil_u1": 0.5317808086744378,
       "epochs_trained": 25,
-      "training_time": 51.96024203300476
+      "training_time": 51.10153293609619
     },
     {
       "month": 7,
@@ -70,7 +70,7 @@
       "mae": 0.10403963923454285,
       "theil_u1": 0.6616627488587299,
       "epochs_trained": 28,
-      "training_time": 56.82860231399536
+      "training_time": 56.87969660758972
     },
     {
       "month": 8,
@@ -79,7 +79,7 @@
       "mae": 0.1050330400466919,
       "theil_u1": 0.6454835056978356,
       "epochs_trained": 24,
-      "training_time": 48.74917793273926
+      "training_time": 48.584460496902466
     },
     {
       "month": 9,
@@ -88,7 +88,7 @@
       "mae": 0.05835627391934395,
       "theil_u1": 0.5081628619404256,
       "epochs_trained": 42,
-      "training_time": 84.8604257106781
+      "training_time": 83.72867274284363
     },
     {
       "month": 10,
@@ -97,7 +97,7 @@
       "mae": 0.05050729587674141,
       "theil_u1": 0.4935465393202304,
       "epochs_trained": 43,
-      "training_time": 86.9215350151062
+      "training_time": 86.36934423446655
     },
     {
       "month": 11,
@@ -106,7 +106,7 @@
       "mae": 0.033982545137405396,
       "theil_u1": 0.416840128927655,
       "epochs_trained": 70,
-      "training_time": 143.5950026512146
+      "training_time": 141.85090923309326
     },
     {
       "month": 12,
@@ -115,7 +115,7 @@
       "mae": 0.10748191177845001,
       "theil_u1": 0.6756236941068323,
       "epochs_trained": 69,
-      "training_time": 143.5128128528595
+      "training_time": 142.56461763381958
     }
   ]
 }

@@ -7,7 +7,7 @@ data:
   - VOL_GG
   label_len: 1
   min_chain_length: 3
-  path: ../data/data.csv
+  path: ../data.csv
   pred_len: 1
   seq_len: 1
   sequential: false
@@ -22,21 +22,21 @@ hardware:
   seed: 42
 model:
   batch_norm_momentum: 0.4
-  dropout: 0.1
+  dropout: 0.15
   n_features: 5
-  name: pimentel_mlp
+  name: pimentel_mlp_gg
   number_layers: 4
-  units_per_layer: 128
+  units_per_layer: 32
 output:
   log_interval: 100
-  save_dir: ./results/pimentel_mlp/month_07_July
+  save_dir: ./results/pimentel_mlp_gg/month_07_July
 training:
-  batch_size: 4096
+  batch_size: 2048
   early_stopping_patience: 20
   epochs: 100
   grad_clip: 1.0
-  learning_rate: 2.3102018878452926e-05
+  learning_rate: 0.0009674434406719037
   optimizer: adamw
   scheduler:
     type: None
-  weight_decay: 1.9762189340280066e-05
+  weight_decay: 0.0004476094197676159

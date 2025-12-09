@@ -7,7 +7,7 @@ data:
   - VOL_GG
   label_len: 1
   min_chain_length: 3
-  path: ../data/data.csv
+  path: ../data.csv
   pred_len: 1
   seq_len: 1
   sequential: false
@@ -54,12 +54,12 @@ hyperopt:
     - 0.001
   trials: 50
 model:
-  batch_norm_momentum: 0.3
-  dropout: 0.15
+  batch_norm_momentum: 0.4
+  dropout: 0.2
   n_features: 5
-  name: pimentel_mlp
+  name: pimentel_mlp_gg
   number_layers: 8
-  units_per_layer: 32
+  units_per_layer: 128
 output:
   log_interval: 100
   save_dir: ./results/pimentel_mlp_gg/configs/hyperopt/trial_29
@@ -68,8 +68,8 @@ training:
   early_stopping_patience: 10
   epochs: 30
   grad_clip: 1.0
-  learning_rate: 0.0004174362104714247
+  learning_rate: 0.0006658414350024519
   optimizer: adamw
   scheduler:
     type: None
-  weight_decay: 8.034395881512887e-06
+  weight_decay: 2.769568534849825e-05
