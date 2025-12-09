@@ -1,0 +1,121 @@
+{
+  "aggregate": {
+    "mean_rmse": 636.9229486972225,
+    "std_rmse": 392.4301341716721,
+    "mean_mae": 406.15952763816955,
+    "std_mae": 385.00535545733663,
+    "mean_theil_u1": 0.678117466121453,
+    "std_theil_u1": 0.3884098951922808,
+    "total_training_time_hours": 3.3814757251077228
+  },
+  "monthly": [
+    {
+      "month": 1,
+      "month_name": "January",
+      "rmse": 410.3904322329749,
+      "mae": 210.04268181590413,
+      "theil_u1": 0.48765168113005813,
+      "epochs_trained": 100,
+      "training_time": 1314.685277223587
+    },
+    {
+      "month": 2,
+      "month_name": "February",
+      "rmse": 395.50083578703754,
+      "mae": 209.01010340376138,
+      "theil_u1": 0.4562401480680758,
+      "epochs_trained": 52,
+      "training_time": 685.5450747013092
+    },
+    {
+      "month": 3,
+      "month_name": "March",
+      "rmse": 372.5492939945132,
+      "mae": 154.6721094767421,
+      "theil_u1": 0.4564681192791223,
+      "epochs_trained": 100,
+      "training_time": 1280.8959379196167
+    },
+    {
+      "month": 4,
+      "month_name": "April",
+      "rmse": 390.3506068994081,
+      "mae": 172.6718916192401,
+      "theil_u1": 0.44103110549289726,
+      "epochs_trained": 89,
+      "training_time": 1145.017921924591
+    },
+    {
+      "month": 5,
+      "month_name": "May",
+      "rmse": 1273.3212796074051,
+      "mae": 934.6142113193303,
+      "theil_u1": 1.4394246593117477,
+      "epochs_trained": 75,
+      "training_time": 962.46892786026
+    },
+    {
+      "month": 6,
+      "month_name": "June",
+      "rmse": 621.593662892104,
+      "mae": 420.8115163468259,
+      "theil_u1": 0.6501174935642148,
+      "epochs_trained": 24,
+      "training_time": 302.17520117759705
+    },
+    {
+      "month": 7,
+      "month_name": "July",
+      "rmse": 1413.8374280809487,
+      "mae": 1271.4282851892565,
+      "theil_u1": 1.3903973398687937,
+      "epochs_trained": 36,
+      "training_time": 448.0005407333374
+    },
+    {
+      "month": 8,
+      "month_name": "August",
+      "rmse": 436.0514099687539,
+      "mae": 190.2269657290677,
+      "theil_u1": 0.4516883362791641,
+      "epochs_trained": 94,
+      "training_time": 1156.0833904743195
+    },
+    {
+      "month": 9,
+      "month_name": "September",
+      "rmse": 408.1388956113635,
+      "mae": 148.1226986102402,
+      "theil_u1": 0.43408069166904956,
+      "epochs_trained": 100,
+      "training_time": 1227.083967924118
+    },
+    {
+      "month": 10,
+      "month_name": "October",
+      "rmse": 387.1927731171037,
+      "mae": 160.51668014406525,
+      "theil_u1": 0.44313700720415955,
+      "epochs_trained": 99,
+      "training_time": 1224.302827835083
+    },
+    {
+      "month": 11,
+      "month_name": "November",
+      "rmse": 409.3362495438544,
+      "mae": 172.44926148179115,
+      "theil_u1": 0.422407416560932,
+      "epochs_trained": 100,
+      "training_time": 1260.3916730880737
+    },
+    {
+      "month": 12,
+      "month_name": "December",
+      "rmse": 1124.812516631204,
+      "mae": 829.3479265218105,
+      "theil_u1": 1.0647655950292203,
+      "epochs_trained": 90,
+      "training_time": 1166.6618695259094
+    }
+  ]
+}
