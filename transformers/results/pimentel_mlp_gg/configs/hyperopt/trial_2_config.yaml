@@ -7,7 +7,7 @@ data:
   - VOL_GG
   label_len: 1
   min_chain_length: 3
-  path: ../data/data.csv
+  path: ../data.csv
   pred_len: 1
   seq_len: 1
   sequential: false
@@ -57,7 +57,7 @@ model:
   batch_norm_momentum: 0.4
   dropout: 0.15
   n_features: 5
-  name: pimentel_mlp
+  name: pimentel_mlp_gg
   number_layers: 2
   units_per_layer: 32
 output:
