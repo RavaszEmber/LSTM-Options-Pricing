@@ -3,72 +3,72 @@
     "month": 1,
     "month_name": "January",
     "success": true,
-    "time_elapsed": 145.9123706817627
+    "time_elapsed": 146.35453915596008
   },
   {
     "month": 2,
     "month_name": "February",
     "success": true,
-    "time_elapsed": 128.98707246780396
+    "time_elapsed": 129.27182388305664
   },
   {
     "month": 3,
     "month_name": "March",
     "success": true,
-    "time_elapsed": 84.20642161369324
+    "time_elapsed": 82.73481106758118
   },
   {
     "month": 4,
     "month_name": "April",
     "success": true,
-    "time_elapsed": 120.68462920188904
+    "time_elapsed": 120.0224359035492
   },
   {
     "month": 5,
     "month_name": "May",
     "success": true,
-    "time_elapsed": 133.38787198066711
+    "time_elapsed": 133.8039834499359
   },
   {
     "month": 6,
     "month_name": "June",
     "success": true,
-    "time_elapsed": 90.02014112472534
+    "time_elapsed": 89.05158996582031
   },
   {
     "month": 7,
     "month_name": "July",
     "success": true,
-    "time_elapsed": 94.73266315460205
+    "time_elapsed": 94.65017485618591
   },
   {
     "month": 8,
     "month_name": "August",
     "success": true,
-    "time_elapsed": 86.50799489021301
+    "time_elapsed": 86.44543719291687
   },
   {
     "month": 9,
     "month_name": "September",
     "success": true,
-    "time_elapsed": 122.68770909309387
+    "time_elapsed": 121.10331082344055
   },
   {
     "month": 10,
     "month_name": "October",
     "success": true,
-    "time_elapsed": 124.3728358745575
+    "time_elapsed": 123.91086387634277
   },
   {
     "month": 11,
     "month_name": "November",
     "success": true,
-    "time_elapsed": 181.47108674049377
+    "time_elapsed": 179.4911105632782
   },
   {
     "month": 12,
     "month_name": "December",
     "success": true,
-    "time_elapsed": 181.47555088996887
+    "time_elapsed": 179.99882984161377
   }
 ]
