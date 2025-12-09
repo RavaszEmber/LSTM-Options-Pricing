@@ -226,20 +226,17 @@ def evaluate_model(model, test_loader, scaler, device, rank, world_size,
         dummy_scaled[:, target_idx] = targets_scaled.flatten()
         targets = scaler.inverse_transform(dummy_scaled)[:, target_idx].reshape(-1, 1)
     else:
-        # Original behavior
-        n_features = len(feature_cols)
-        target_idx = feature_cols.index(target_col) if target_col in feature_cols else -1
+        # Non-sequential mode: scaler was fit on [features + target] concatenated
+        # The target column is the last column in the scaler
+        n_cols = scaler.n_features_in_
+        target_idx = n_cols - 1  # Target is always the last column after scaling
 
-        if target_idx >= 0:
-            dummy_features = np.zeros((len(predictions_scaled), n_features))
-            dummy_features[:, target_idx] = predictions_scaled.flatten()
-            predictions = scaler.inverse_transform(dummy_features)[:, target_idx].reshape(-1, 1)
+        dummy_scaled = np.zeros((len(predictions_scaled), n_cols))
+        dummy_scaled[:, target_idx] = predictions_scaled.flatten()
+        predictions = scaler.inverse_transform(dummy_scaled)[:, target_idx].reshape(-1, 1)
 
-            dummy_features[:, target_idx] = targets_scaled.flatten()
-            targets = scaler.inverse_transform(dummy_features)[:, target_idx].reshape(-1, 1)
-        else:
-            predictions = predictions_scaled
-            targets = targets_scaled
+        dummy_scaled[:, target_idx] = targets_scaled.flatten()
+        targets = scaler.inverse_transform(dummy_scaled)[:, target_idx].reshape(-1, 1)
 
     # Metrics
     mse = mean_squared_error(targets, predictions)
