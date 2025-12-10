@@ -9,8 +9,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 
-from models import mlp
-
+from models import PimentelMLP
 DATA_DIR = "data/"
 TEST_YEAR = 2023
 
@@ -164,7 +163,7 @@ def train(
         units_per_layer=units_per_layer,
         momentum=batch_norm_momentum,
         device=device,
-    )
+    ).to(device)
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=learning_rate, weight_decay=weight_decay
     )
@@ -276,8 +275,6 @@ def main():
     p = argparse.ArgumentParser(description="Train a model")
     p.add_argument("--vol_type", type=str, required=True, choices=["normal", "GG", "random"])
     p.add_argument("--model", type=str, required=True, default="mlp")
-    p.add_argument("--start-month", type=int, required=True, default=1)
-    p.add_argument("--end-month", type=int, required=True, default=1)
     args = p.parse_args()
 
     # Note: this is the non GG
@@ -293,7 +290,6 @@ def main():
 
     # List to collect all evaluation results
     all_eval_results = []
-
     for month in range(1, 13):
         train_df, val_df, test_df, scaler = create_rolling_window_split(
             df, test_year=TEST_YEAR, test_month=1, feature_columns=training_columns
@@ -308,7 +304,7 @@ def main():
         print(f"\nNaN values in CALL column: {train_df['CALL'].isna().sum()}")
 
         criterion = nn.MSELoss()
-        model = train(train_df, val_df, mlp.PimentelMLP, device, criterion=criterion)
+        model = train(train_df, val_df, PimentelMLP, device, criterion=criterion)
 
         checkpoint_dir = f"checkpoints/{args.model}_{args.vol_type}"
         os.makedirs(checkpoint_dir, exist_ok=True)
@@ -380,6 +376,14 @@ def main():
 
         eval_results_path = f"{checkpoint_dir}/{TEST_YEAR}_{month:02d}_results.csv"
         eval_results.to_csv(eval_results_path, index=False)
+
+        raw_results_df = pd.DataFrame({
+            "month": np.ones_like(unscaled_true) * month,
+            "predicted": unscaled_pred,
+            "target": unscaled_true
+        })
+        raw_results_path = f"{checkpoint_dir}/{TEST_YEAR}_{month:02d}_raw_results.csv"
+        raw_results_df.to_csv(raw_results_path, index=False)
 
         print(eval_results)
 
