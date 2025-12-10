@@ -1,0 +1,2 @@
+test_year,test_month,model_type,test_loss_mse_unscaled,test_loss_rmse_unscaled,test_loss_mae_unscaled,test_loss_mse,test_rmse,test_mae,theil_u1,bias_proportion,variance_proportion,covariance_proportion,sum_of_proportions
+2023,6,PimentelMLP,1907.0234286814784,43.66947937268635,35.636654446039756,9.650481661083177e-05,0.009823686443269253,0.008016659878194332,0.051892165,0.62705594,8.657226e-05,0.37285649501603396,0.9999989839724854
